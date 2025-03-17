@@ -172,3 +172,83 @@ def check_video_file(file_path):
         logger.error(f"Error getting video properties: {e}")
     
     return True
+
+def extract_video_creation_time(file_path):
+    """Extract the creation time of the video from its metadata."""
+    creation_time = None
+    
+    # Try using exiftool first (more reliable for iPhone videos)
+    try:
+        cmd = ['exiftool', '-CreateDate', '-json', file_path]
+        result = subprocess.run(cmd, capture_output=True, text=True)
+        if result.returncode == 0:
+            exif_data = json.loads(result.stdout)
+            if exif_data and 'CreateDate' in exif_data[0]:
+                date_str = exif_data[0]['CreateDate']
+                # Convert from "YYYY:MM:DD HH:MM:SS" to "YYYY-MM-DD HH:MM:SS"
+                date_str = date_str.replace(':', '-', 2).replace('-', ':', 2)
+                creation_time = parser.parse(date_str)
+                logger.info(f"Video creation time from EXIF: {creation_time}")
+                return creation_time
+    except Exception as e:
+        logger.warning(f"Could not extract creation time using exiftool: {e}")
+    
+    # Fallback to ffprobe
+    try:
+        cmd = [
+            'ffprobe', 
+            '-v', 'error', 
+            '-select_streams', 'v:0', 
+            '-show_entries', 'format_tags=creation_time', 
+            '-of', 'json', 
+            file_path
+        ]
+        result = subprocess.run(cmd, capture_output=True, text=True)
+        if result.returncode == 0:
+            data = json.loads(result.stdout)
+            if 'format' in data and 'tags' in data['format'] and 'creation_time' in data['format']['tags']:
+                creation_time = parser.parse(data['format']['tags']['creation_time'])
+                logger.info(f"Video creation time from FFprobe: {creation_time}")
+                return creation_time
+    except Exception as e:
+        logger.warning(f"Could not extract creation time using ffprobe: {e}")
+    
+    # If all else fails, use the file's modification time
+    try:
+        mtime = os.path.getmtime(file_path)
+        creation_time = datetime.fromtimestamp(mtime)
+        logger.warning(f"Using file modification time as fallback: {creation_time}")
+    except Exception as e:
+        logger.error(f"Could not determine video creation time: {e}")
+        # Use current time as last resort
+        creation_time = datetime.now()
+        logger.warning(f"Using current time as last resort: {creation_time}")
+    
+    return creation_time
+
+def analyze_frame_quality(frame):
+    """Analyze the quality of a frame based on blur, brightness, and contrast."""
+    if frame is None:
+        return 0
+    
+    # Convert to grayscale for analysis
+    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    
+    # Detect blur using Laplacian variance
+    laplacian_var = cv2.Laplacian(gray, cv2.CV_64F).var()
+    
+    # Calculate brightness (average pixel value)
+    brightness = np.mean(gray)
+    
+    # Calculate contrast (standard deviation of pixel values)
+    contrast = np.std(gray)
+    
+    # Normalize and combine metrics into a quality score (0-100)
+    blur_score = min(100, laplacian_var / 5)  # Higher variance = less blur
+    brightness_score = 100 - abs(brightness - 128) * 100 / 128  # Closer to middle value (128) is better
+    contrast_score = min(100, contrast * 2)  # Higher contrast is generally better
+    
+    # Weighted average of scores
+    quality_score = 0.5 * blur_score + 0.25 * brightness_score + 0.25 * contrast_score
+    
+    return quality_score
