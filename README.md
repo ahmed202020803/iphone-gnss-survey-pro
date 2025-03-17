@@ -1,67 +1,57 @@
 # iPhone GNSS Survey Pro
 
-A sophisticated technical surveying tool designed to process video footage with GNSS (Global Navigation Satellite System) data, specifically optimized for iPhone 16 Pro Max.
+A professional-grade technical surveying tool optimized for iPhone 16 Pro Max that processes video with GNSS data to create georeferenced images and generate detailed survey reports.
 
 ## Features
 
-- **High-Quality Frame Extraction**: Automatically extracts frames from video with quality analysis
-- **Multi-Format GNSS Support**: Processes data from CSV, GPX, and NMEA formats
-- **Precise Positioning**: Calculates camera positions with offsets and error estimation
-- **Georeferenced Images**: Embeds geographic metadata in extracted frames
-- **Comprehensive Reporting**: Generates HTML reports with interactive maps
-- **Indoor Positioning**: Enhanced algorithms for indoor surveying
-- **Quality Control**: Blur detection, brightness analysis, and contrast evaluation
-- **Interactive Mode**: Google Colab integration for easy usage
+- **High-Quality Frame Extraction**: Automatically extracts frames from iPhone 16 Pro Max videos at specified intervals with blur detection and quality assessment.
+- **Multi-Format GNSS Support**: Works with CSV, GPX, and NMEA GNSS data formats.
+- **Precise Positioning**: Applies camera offsets and heading corrections for accurate positioning.
+- **Georeferenced Images**: Embeds geographic coordinates in image metadata and adds visual markers.
+- **Comprehensive Reporting**: Generates HTML reports with interactive maps, KML files for GIS applications, and CSV exports.
+- **Indoor Positioning**: Enhanced algorithms for indoor surveying with improved error estimation.
+- **Quality Control**: Automatic blur detection, brightness analysis, and quality scoring for each frame.
+- **Interactive Mode**: Seamless integration with Google Colab for easy use without local installation.
 
 ## Requirements
 
 - Python 3.7+
 - OpenCV
 - NumPy
-- FFmpeg
-- ExifTool
-- Additional dependencies listed in `requirements.txt`
+- FFmpeg (for video processing)
+- ExifTool (for metadata manipulation)
+- Additional dependencies in requirements.txt
 
 ## Installation
 
-1. Clone the repository:
 ```bash
+# Clone the repository
 git clone https://github.com/ahmed202020803/iphone-gnss-survey-pro.git
 cd iphone-gnss-survey-pro
-```
 
-2. Install dependencies:
-```bash
+# Install dependencies
 pip install -r requirements.txt
-```
 
-3. Install system dependencies:
-- FFmpeg: [Installation Guide](https://ffmpeg.org/download.html)
-- ExifTool: [Installation Guide](https://exiftool.org/install.html)
+# Install external tools
+# FFmpeg and ExifTool are required for full functionality
+```
 
 ## Usage
 
-### Command Line Interface
+### Command Line
 
 ```bash
-python iphone_gnss_survey.py --video path/to/video.mp4 --gnss path/to/gnss.csv --output output_dir
+python iphone_gnss_survey.py --video path/to/video.mp4 --gnss path/to/gnss_data.csv --pole-height 1.5 --frame-interval 0.5 --indoor
 ```
-
-Optional arguments:
-- `--config`: Path to configuration file
-- `--sample-data`: Use sample GNSS data
-- `--pole-height`: Camera pole height in meters (default: 1.5)
-- `--frame-interval`: Frame extraction interval in seconds (default: 0.5)
-- `--indoor`: Enable indoor positioning mode
 
 ### Google Colab
 
-The tool can be run interactively in Google Colab. Import the module and use:
+The tool can be run interactively in Google Colab:
 
 ```python
 from iphone_gnss_survey import run_video_gnss_survey
 
-# Run the survey with default parameters
+# Run with sample GNSS data
 report_path = run_video_gnss_survey(
     video_path="path/to/video.mp4",
     use_sample_data=True,
@@ -71,46 +61,32 @@ report_path = run_video_gnss_survey(
 )
 ```
 
-## Configuration
+## Configuration Options
 
-The tool can be configured via JSON file or command-line arguments. Example configuration:
+The tool is highly configurable through a JSON configuration file or command-line arguments:
 
-```json
-{
-    "video": {
-        "frame_interval": 0.5,
-        "resolution": "1080x1920",
-        "quality_threshold": 40
-    },
-    "gnss": {
-        "interpolation_method": "linear",
-        "min_satellites": 6
-    },
-    "camera": {
-        "offset_up": 1.5
-    }
-}
-```
+- **Video Settings**: Frame interval, quality thresholds, blur detection sensitivity
+- **GNSS Settings**: Data format, time offset, interpolation method
+- **Camera Settings**: Offset from GNSS antenna, heading correction
+- **Output Settings**: Directory, report generation options, coordinate format
 
 ## Output
 
-- **Georeferenced Images**: JPEG images with embedded geographic metadata
-- **Marked Images**: Visual overlays showing coordinates and quality metrics
-- **HTML Report**: Interactive survey report with map and statistics
-- **KML File**: For Google Earth visualization
-- **CSV Export**: Tabular data of all survey points
+- **Georeferenced Images**: JPG files with embedded geographic coordinates
+- **HTML Report**: Interactive report with maps, tables, and image thumbnails
+- **KML File**: For viewing in Google Earth or other GIS applications
+- **CSV Export**: Tabular data with coordinates and quality metrics
 
 ## Technical Details
 
-- Optimized for iPhone 16 Pro Max (1080x1920 resolution, 59.97 FPS)
-- Uses Laplacian variance for blur detection
-- Implements linear, cubic, and nearest-neighbor interpolation for GNSS data
-- Calculates camera position with north, east, and up offsets
-- Estimates horizontal and vertical errors based on HDOP and environment
+- **iPhone 16 Pro Max Optimization**: Tuned for the specific camera characteristics and video formats of the iPhone 16 Pro Max
+- **Blur Detection**: Uses Laplacian variance to detect and filter blurry frames
+- **GNSS Interpolation**: Linear, cubic, or nearest-neighbor interpolation for precise positioning between GNSS points
+- **Error Estimation**: Calculates position error estimates based on HDOP and environment (indoor/outdoor)
 
 ## License
 
-MIT License - see LICENSE file for details.
+This project is licensed under the MIT License - see the LICENSE file for details.
 
 ## Contributing
 
